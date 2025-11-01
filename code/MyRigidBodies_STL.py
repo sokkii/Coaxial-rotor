@@ -38,7 +38,7 @@ oGround = mbs.AddObject(ObjectGround(referencePosition=[0, 0, 0]))
     mainSys=mbs,
     inertia=iMotor,
     nodeType=str(exu.NodeType.RotationRotationVector),
-    position=[0, 0.015733e-3, 45.764021e-3],
+    position=[0, 0.015733, 45.764021],
     rotationMatrix=rotation_matrix_180_x,
     gravity=g,
     graphicsDataList=[motor_graphics, graphicsCOM0],
@@ -48,35 +48,64 @@ oGround = mbs.AddObject(ObjectGround(referencePosition=[0, 0, 0]))
     mainSys=mbs,
     inertia=iFlywheel,
     nodeType=str(exu.NodeType.RotationEulerParameters),
-    position=[0.002729e-3, 0, 82.535793e-3],
+    position=[0.002729, 0, 82.535793],
     rotationMatrix=rotation_matrix_180_x,
     gravity=g,
     graphicsDataList=[flywheel_graphics, graphicsCOM1],
 )
 
-#****** Markers ******
+[n2, b2] = AddRigidBody(
+    mainSys=mbs,
+    inertia=iSetup,
+    nodeType=str(exu.NodeType.RotationEulerParameters),
+    position=[0, 0, -150],
+    rotationMatrix=rotation_matrix_180_x,
+    gravity=g,
+    graphicsDataList=[setup_graphics, graphicsCOM3],
+)
+
+[n3, b3] = AddRigidBody(
+    mainSys=mbs,
+    inertia=iMotor,
+    nodeType=str(exu.NodeType.RotationRotationVector),
+    position=[0, 0.015733, -300+45.764021],
+    rotationMatrix=np.eye(3),
+    gravity=g,
+    graphicsDataList=[motor_graphics, graphicsCOM0],
+)
+
+[n4, b4] = AddRigidBody(
+    mainSys=mbs,
+    inertia=iFlywheel,
+    nodeType=str(exu.NodeType.RotationEulerParameters),
+    position=[0.002729, 0, -300+82.535793],
+    rotationMatrix=np.eye(3),
+    gravity=g,
+    graphicsDataList=[flywheel_graphics, graphicsCOM1],
+)
 
 markerGround0 = mbs.AddMarker(
     MarkerBodyRigid(bodyNumber=oGround, localPosition=[0, 0, -123/1000])
 )
-markerBody0 = mbs.AddMarker(MarkerBodyRigid(bodyNumber=b0, localPosition=[0, 0, 165/1000]))
 
-# запрет поворота мотора относительно земли (ROTX, ROTY, ROTZ fixed) 
+markerBody0 = mbs.AddMarker(MarkerBodyRigid(bodyNumber=b0, localPosition=[0, 0, 165/1000]))
+markerMotor = mbs.AddMarker(MarkerBodyRigid(bodyNumber=b0, localPosition=[0, 0, -30e-3]))
+markerFlywheel = mbs.AddMarker(MarkerBodyRigid(bodyNumber=b1, localPosition=[0, 0, 10e-3]))
+
+# полный запрет движения мотора относительно земли
 mbs.AddObject(
     GenericJoint(
         markerNumbers=[markerGround0, markerBody0],
-        constrainedAxes=[0, 0, 0, 1, 1, 1],  # rotation fixed
+        constrainedAxes=[0, 0, 0, 1, 1, 1],
         visualization=VObjectJointGeneric(axesRadius=0.02, axesLength=0.8),
     )
 )
+
 # ограничение линейных перемещений UX, UY, UZ пружинами
 mbs.AddObject(CartesianSpringDamper(markerNumbers = [markerGround0, markerBody0],
                                     stiffness = [k,k,k],
                                     damping = [k*0.1,k*0.1,k*0.1], offset = [0,0,0],
                                     visualization=VCartesianSpringDamper(drawSize=0.05)))
-
-markerMotor = mbs.AddMarker(MarkerBodyRigid(bodyNumber=b0, localPosition=[0, 0, -30e-3]))
-markerFlywheel = mbs.AddMarker(MarkerBodyRigid(bodyNumber=b1, localPosition=[0, 0, 10e-3]))
 
 mbs.AddObject(
     ObjectJointRevoluteZ(
@@ -89,8 +118,8 @@ mbs.AddObject(
 
 coordMarker = mbs.AddMarker(
     MarkerNodeRotationCoordinate(
-        nodeNumber=n1,  # flywheel node
-        rotationCoordinate=2,  # 0=x, 1=y, 2=z (Euler parameter nodes use this convention)
+        nodeNumber=n1,
+        rotationCoordinate=2,
     )
 )
 
